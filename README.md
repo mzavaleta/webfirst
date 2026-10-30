@@ -69,6 +69,8 @@ export ANDROID_HOME=/path/to/android-sdk
 ./gradlew testDebugUnitTest assembleDebug
 ```
 
+`assembleRelease` is intentionally unsigned — no keystore is published here. Add a signing config locally, or from CI secrets, if you distribute your own build.
+
 ## Privacy
 
 - No analytics, no crash reporting, no accounts.

@@ -1,0 +1,16 @@
+# Normalize line endings so the build behaves the same on every platform.
+* text=auto eol=lf
+
+# The wrapper script must stay LF or bash refuses to run it.
+gradlew text eol=lf
+*.sh text eol=lf
+
+# Windows scripts need CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaries and generated artifacts are never converted.
+*.jar binary
+*.apk binary
+*.png binary
+*.keystore binary

@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openDefaultAppsSettings() {
-        val action = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        val action = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
         } else {
             Settings.ACTION_APPLICATION_DETAILS_SETTINGS

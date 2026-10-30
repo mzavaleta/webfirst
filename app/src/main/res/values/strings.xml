@@ -7,7 +7,6 @@
     <string name="explanation">WebFirst intercepts links from sites that force you into their app, removes the tracking parameters, and opens the clean URL in your browser. No account, no network calls of its own, no data stored.</string>
 
     <string name="association_title">Step 1 — associate the links</string>
-    <string name="association_state">Checking…</string>
     <string name="state_linked">Links are associated with WebFirst.</string>
     <string name="state_not_linked">Links are not associated yet. Open the setting below and enable "Open supported links".</string>
     <string name="state_unknown">Association state is not reported on this Android version.</string>

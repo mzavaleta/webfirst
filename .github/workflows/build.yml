@@ -18,7 +18,14 @@ jobs:
           java-version: "21"
           cache: gradle
 
-      - uses: android-actions/setup-android@v3
+      # The runner image already ships cmdline-tools and platform-tools; only
+      # the platform and build-tools this project targets are missing.
+      - name: Install Android SDK packages
+        run: |
+          sdk="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          yes | "$sdk/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$sdk/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 
       - name: Test and build
         run: ./gradlew --no-daemon testDebugUnitTest assembleDebug

@@ -14,3 +14,7 @@ captures/
 # Local reference material: the recovered v1 build and its decompiled source.
 # Kept on disk for provenance, never published.
 legacy/
+
+# Engram memory chunks are never a Git artifact; the project identity is.
+.engram/chunks/
+.engram/manifest.json

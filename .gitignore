@@ -10,3 +10,7 @@ captures/
 *.aab
 *.keystore
 *.jks
+
+# Local reference material: the recovered v1 build and its decompiled source.
+# Kept on disk for provenance, never published.
+legacy/

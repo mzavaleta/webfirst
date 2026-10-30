@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WebFirst</string>
+
+    <string name="headline">Open links on the web, not in the app</string>
+
+    <string name="explanation">WebFirst intercepts links from sites that force you into their app, removes the tracking parameters, and opens the clean URL in your browser. No account, no network calls of its own, no data stored.</string>
+
+    <string name="association_title">Step 1 — associate the links</string>
+    <string name="association_state">Checking…</string>
+    <string name="state_linked">Links are associated with WebFirst.</string>
+    <string name="state_not_linked">Links are not associated yet. Open the setting below and enable "Open supported links".</string>
+    <string name="state_unknown">Association state is not reported on this Android version.</string>
+    <string name="open_by_default_action">Open by default</string>
+    <string name="association_help">In the screen that opens, enable "Open supported links" and tick every host listed below. This app cannot verify the domains itself — that requires a file only the site owner can host — so Android asks you to associate them once.</string>
+
+    <string name="supported_title">Supported sites</string>
+</resources>

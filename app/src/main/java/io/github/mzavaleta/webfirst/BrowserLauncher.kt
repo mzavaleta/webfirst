@@ -1,4 +1,4 @@
-package io.github.manuelzm.webfirst
+package io.github.mzavaleta.webfirst
 
 import android.content.ActivityNotFoundException
 import android.content.Context

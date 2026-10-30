@@ -1,11 +1,11 @@
-package io.github.manuelzm.webfirst
+package io.github.mzavaleta.webfirst
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
-import io.github.manuelzm.webfirst.core.HttpRedirectResolver
-import io.github.manuelzm.webfirst.core.LinkPipeline
+import io.github.mzavaleta.webfirst.core.HttpRedirectResolver
+import io.github.mzavaleta.webfirst.core.LinkPipeline
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

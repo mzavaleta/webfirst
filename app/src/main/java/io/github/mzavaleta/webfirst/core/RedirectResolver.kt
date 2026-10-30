@@ -1,4 +1,4 @@
-package io.github.manuelzm.webfirst.core
+package io.github.mzavaleta.webfirst.core
 
 /** Resolves the final destination of a URL that is expected to redirect. */
 fun interface RedirectResolver {

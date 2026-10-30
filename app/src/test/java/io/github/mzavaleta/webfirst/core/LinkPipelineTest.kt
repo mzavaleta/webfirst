@@ -1,4 +1,4 @@
-package io.github.manuelzm.webfirst.core
+package io.github.mzavaleta.webfirst.core
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

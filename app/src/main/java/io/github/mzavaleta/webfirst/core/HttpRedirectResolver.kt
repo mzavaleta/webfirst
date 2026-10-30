@@ -1,4 +1,4 @@
-package io.github.manuelzm.webfirst.core
+package io.github.mzavaleta.webfirst.core
 
 import java.net.HttpURLConnection
 import java.net.URL

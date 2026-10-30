@@ -1,4 +1,4 @@
-package io.github.manuelzm.webfirst.core
+package io.github.mzavaleta.webfirst.core
 
 /**
  * Describes one site the app knows how to handle.

@@ -1,4 +1,4 @@
-package io.github.manuelzm.webfirst
+package io.github.mzavaleta.webfirst
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -11,7 +11,7 @@ import android.provider.Settings
 import android.widget.Button
 import android.widget.TextView
 import androidx.activity.ComponentActivity
-import io.github.manuelzm.webfirst.core.SiteRules
+import io.github.mzavaleta.webfirst.core.SiteRules
 
 /**
  * The only visible screen: explains the app and links to the system setting that

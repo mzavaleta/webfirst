@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "io.github.manuelzm.webfirst"
+    namespace = "io.github.mzavaleta.webfirst"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "io.github.manuelzm.webfirst"
+        applicationId = "io.github.mzavaleta.webfirst"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

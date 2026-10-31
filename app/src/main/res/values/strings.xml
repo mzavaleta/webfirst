@@ -14,4 +14,6 @@
     <string name="association_help">In the screen that opens, enable "Open supported links" and tick every host listed below. This app cannot verify the domains itself — that requires a file only the site owner can host — so Android asks you to associate them once.</string>
 
     <string name="supported_title">Supported sites</string>
+
+    <string name="error_no_browser">WebFirst found no browser to open this link.</string>
 </resources>

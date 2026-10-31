@@ -46,9 +46,11 @@ object BrowserLauncher {
             return false
         }
 
+        // Informational only: the intent below is pinned with setPackage, so it
+        // cannot come back here. Refusing would break the common case of a short
+        // link that this app also handles.
         if (wouldResolveToSelf(context, uri)) {
-            Log.e(TAG, "refusing to open $uri: it would resolve back into this app")
-            return false
+            Log.w(TAG, "$uri would resolve back into this app; the browser package is pinned anyway")
         }
 
         if (launchCustomTab(context, uri, browser)) return true

@@ -27,7 +27,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class InterceptActivity : ComponentActivity() {
 
-    private val pipeline by lazy { LinkPipeline(HttpRedirectResolver()) }
+    private val pipeline by lazy {
+        LinkPipeline(HttpRedirectResolver(log = { message -> Log.d(TAG, message) }))
+    }
     private val mainHandler = Handler(Looper.getMainLooper())
     private val delivered = AtomicBoolean(false)
 
@@ -61,8 +63,12 @@ class InterceptActivity : ComponentActivity() {
         )
 
         resolverExecutor.execute {
+            val startedAt = System.nanoTime()
             val target = try {
-                pipeline.prepare(rawUrl)
+                pipeline.prepare(rawUrl).also {
+                    val elapsedMs = (System.nanoTime() - startedAt) / 1_000_000
+                    Log.d(TAG, "resolved in ${elapsedMs}ms: $it")
+                }
             } catch (error: Exception) {
                 Log.e(TAG, "resolution failed, falling back to the original link", error)
                 rawUrl
@@ -95,7 +101,14 @@ class InterceptActivity : ComponentActivity() {
 
     private companion object {
         const val TAG = "WebFirst"
-        const val RESOLVE_BUDGET_MS = 1_500L
+
+        /**
+         * Short links need two round trips to TikTok (short host -> canonical
+         * host), each with DNS, TCP and TLS. Measured on a real device with the
+         * screen on: ~1.35s. Anything that exceeds this budget is not a failure:
+         * the original link is still delivered to the browser, just uncleaned.
+         */
+        const val RESOLVE_BUDGET_MS = 3_500L
 
         /** Daemon: a stuck lookup must never keep the process alive. */
         val resolverExecutor = Executors.newFixedThreadPool(2) { runnable ->

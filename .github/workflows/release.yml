@@ -1,0 +1,76 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Install Android SDK packages
+        run: |
+          sdk="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          yes | "$sdk/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$sdk/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+
+      # The keystore is never committed: it arrives base64-encoded from the
+      # WEBFIRST_KEYSTORE_B64 secret and lives only in the runner's temp dir.
+      - name: Decode keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.WEBFIRST_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "WEBFIRST_KEYSTORE_B64 is not set; refusing to publish an unsigned release" >&2
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/webfirst.jks"
+
+      - name: Build signed release
+        env:
+          WEBFIRST_KEYSTORE: ${{ runner.temp }}/webfirst.jks
+          WEBFIRST_KEYSTORE_PASSWORD: ${{ secrets.WEBFIRST_KEYSTORE_PASSWORD }}
+          WEBFIRST_KEY_ALIAS: ${{ secrets.WEBFIRST_KEY_ALIAS }}
+          WEBFIRST_KEY_PASSWORD: ${{ secrets.WEBFIRST_KEY_PASSWORD }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          # v1.2.3 -> versionName 1.2.3, versionCode 10203. Play rejects a
+          # repeated or lower versionCode, so it has to follow the tag.
+          VERSION_NAME="${TAG_NAME#v}"
+          VERSION_CODE=$(printf '%s' "$VERSION_NAME" | awk -F. '{printf "%d%02d%02d", $1+0, $2+0, $3+0}')
+          export WEBFIRST_VERSION_NAME="$VERSION_NAME"
+          export WEBFIRST_VERSION_CODE="$VERSION_CODE"
+          echo "versionName=$VERSION_NAME versionCode=$VERSION_CODE"
+          ./gradlew --no-daemon testDebugUnitTest bundleRelease assembleRelease
+
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          # Works whether the tag arrives via git push or via the "Draft a new
+          # release" screen, which creates the release before this runs.
+          if gh release view "$TAG_NAME" > /dev/null 2>&1; then
+            gh release upload "$TAG_NAME" \
+              app/build/outputs/apk/release/*.apk \
+              app/build/outputs/bundle/release/*.aab \
+              --clobber
+          else
+            gh release create "$TAG_NAME" \
+              app/build/outputs/apk/release/*.apk \
+              app/build/outputs/bundle/release/*.aab \
+              --title "$TAG_NAME" \
+              --generate-notes
+          fi

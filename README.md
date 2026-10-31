@@ -14,7 +14,7 @@ Many sites make their mobile web deliberately worse so that you install their ap
 tap link in any app
   -> InterceptActivity (invisible)
        -> is the host supported?           no  -> forward to the browser unchanged
-       -> is it a short link?              yes -> follow the redirect chain (max 5 hops, 5s timeout)
+       -> is it a short link?              yes -> follow the redirect chain
        -> strip query string and fragment
   -> open in the user's browser via Custom Tabs
   -> exit
@@ -22,8 +22,8 @@ tap link in any app
 
 Three design decisions worth knowing:
 
-- **Custom Tabs, not `ACTION_VIEW`.** Re-firing a plain `ACTION_VIEW` for a host the app itself intercepts resolves back into the app and loops forever. Custom Tabs bind to a browser package and cannot.
-- **Redirect resolution happens first.** `vm.tiktok.com/ZM...` contains no query string at all; the tracking parameters only exist after the redirect lands on the canonical URL.
+- **Custom Tabs, pinned to a browser package.** Re-firing a plain `ACTION_VIEW` for a host the app itself intercepts resolves back into the app and loops forever. Every outgoing intent therefore names the browser explicitly, discovered by resolving a URL this app never handles.
+- **Redirect resolution happens first.** `vm.tiktok.com/ZM...` contains no query string at all; the tracking parameters only exist after the redirect lands on the canonical URL. Resolution is capped at 3.5s on a worker thread and races a deadline, so a slow network degrades to opening the original link instead of stalling.
 - **Cleaning is per-site, never global.** On YouTube the query string *is* the content (`watch?v=ID`), so a global strip would destroy links instead of cleaning them.
 
 ## Install
@@ -32,6 +32,8 @@ Three design decisions worth knowing:
 ./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
+
+Or download the APK attached to a [release](../../releases).
 
 ## Setup — the one step nobody can automate
 
@@ -45,6 +47,8 @@ Instead, associate the hosts once by hand:
 4. Tick every host listed on the screen.
 
 After that, tapping a supported link opens WebFirst, which cleans it and hands it to your browser. Until then, Android shows its own chooser and the app is just one option there.
+
+Reinstalling the app resets this; the association lives in the system, not in the app.
 
 ## Supported sites
 
@@ -69,7 +73,81 @@ export ANDROID_HOME=/path/to/android-sdk
 ./gradlew testDebugUnitTest assembleDebug
 ```
 
-`assembleRelease` is intentionally unsigned — no keystore is published here. Add a signing config locally, or from CI secrets, if you distribute your own build.
+Debug builds are signed with the machine's debug keystore. Release builds are unsigned unless the signing values below are present.
+
+## Releasing
+
+Two workflows live in `.github/workflows/`:
+
+| Workflow | Trigger | Produces |
+| --- | --- | --- |
+| `build.yml` | every push and pull request | tests + unsigned debug APK, kept 90 days |
+| `release.yml` | a `v*` tag | signed APK + signed Play AAB, attached to a GitHub Release |
+
+### One-time setup
+
+**1. Create the keystore.** Keep it out of the repository.
+
+```bash
+mkdir -p ~/keys
+keytool -genkeypair -v \
+  -keystore ~/keys/webfirst-release.jks \
+  -alias webfirst -keyalg RSA -keysize 4096 -validity 10000
+```
+
+**2. Back it up in two places.** A password manager attachment plus one encrypted copy somewhere else. With Play App Signing enabled this is your *upload* key and Play support can reset it; before that, losing it means never being able to update the app again.
+
+**3. Add four repository secrets** — Settings → Secrets and variables → Actions:
+
+```bash
+base64 -w0 ~/keys/webfirst-release.jks   # the value for WEBFIRST_KEYSTORE_B64
+```
+
+| Secret | Value |
+| --- | --- |
+| `WEBFIRST_KEYSTORE_B64` | output of the command above |
+| `WEBFIRST_KEYSTORE_PASSWORD` | store password |
+| `WEBFIRST_KEY_ALIAS` | `webfirst` |
+| `WEBFIRST_KEY_PASSWORD` | key password |
+
+Secrets are encrypted at rest, write-only, masked in logs, and withheld from fork pull requests. The release workflow fails on purpose when the keystore secret is missing, rather than publishing an unsigned build.
+
+### Cutting a release
+
+```bash
+git tag -a v1.0.0 -m "First release"
+git push origin v1.0.0
+```
+
+That is the whole procedure. The job tests, builds, signs, and attaches `app-release.apk` and `app-release.aab` to the `v1.0.0` release page.
+
+`versionName` and `versionCode` come from the tag — `v1.2.3` → `1.2.3` / `10203` — because Play rejects a repeated or lower `versionCode`. Creating the release from the GitHub UI works too: the workflow uploads into the existing release instead of failing.
+
+### Signed builds locally
+
+Export the same four values instead of using secrets:
+
+```bash
+export WEBFIRST_KEYSTORE=~/keys/webfirst-release.jks
+export WEBFIRST_KEYSTORE_PASSWORD=...
+export WEBFIRST_KEY_ALIAS=webfirst
+export WEBFIRST_KEY_PASSWORD=...
+
+./gradlew assembleRelease   # signed APK, for sideloading
+./gradlew bundleRelease     # AAB, for Play
+```
+
+### Publishing to Play
+
+Play takes the `.aab`, not the APK. An AAB cannot be installed on a device — Play generates per-device APKs from it.
+
+1. Play Console → create the app ($25 one-time, identity verification).
+2. Upload `app-release.aab` to a track.
+3. Complete data safety (no data collected), privacy policy URL, and content rating.
+4. Personal developer accounts created after 2023 need a closed test with **12 testers for 14 continuous days** before production access.
+5. Enable Play App Signing, so Google holds the app-signing key and your keystore becomes the upload key.
+
+The GitHub APK and the Play build carry different signatures, so a user cannot switch between the two channels without uninstalling.
 
 ## Privacy
 

@@ -28,8 +28,9 @@ android {
         applicationId = "io.github.mzavaleta.webfirst"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        // Overridable from the release workflow so tagging is the only step.
+        versionCode = System.getenv("WEBFIRST_VERSION_CODE")?.toIntOrNull() ?: 1
+        versionName = System.getenv("WEBFIRST_VERSION_NAME") ?: "1.0.0"
     }
 
     signingConfigs {

@@ -53,7 +53,7 @@ class HttpRedirectResolver(
 
     private companion object {
         const val DEFAULT_MAX_HOPS = 5
-        const val DEFAULT_TIMEOUT_MS = 3_000
+        const val DEFAULT_TIMEOUT_MS = 1_500
         const val LOCATION_HEADER = "Location"
         val REDIRECT_CODES = setOf(301, 302, 303, 307, 308)
     }
